@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+httpx
+anthropic
+sqlmodel
+python-jose[cryptography]
+python-dotenv
+pydantic

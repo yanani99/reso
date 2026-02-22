@@ -1,0 +1,23 @@
+# Environment & secrets
+.env
+
+# Database
+*.db
+*.sqlite
+
+# Debug screenshots
+suno-debug*.png
+
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# IDE
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
