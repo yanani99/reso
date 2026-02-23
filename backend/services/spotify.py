@@ -153,8 +153,16 @@ class SpotifyClient:
         for artist in top_artists_short + top_artists_medium:
             all_artist_ids.add(artist["id"])
 
+        print(f"[spotify] top_artists_short count: {len(top_artists_short)}", flush=True)
+        for a in top_artists_short[:5]:
+            print(f"[spotify]   artist={a.get('name')}, genres={a.get('genres')}, popularity={a.get('popularity')}", flush=True)
+
         artist_details = await self.get_artist_details(list(all_artist_ids))
         artist_map = {a["id"]: a for a in artist_details if a}
+        print(f"[spotify] artist_details returned: {len(artist_details)} of {len(all_artist_ids)} requested", flush=True)
+
+        artists_with_genres = sum(1 for a in artist_details if a and a.get("genres"))
+        print(f"[spotify] artists with genres from Spotify: {artists_with_genres}/{len(artist_details)}", flush=True)
 
         def enrich(tracks: list[dict]) -> list[dict]:
             enriched = []
@@ -168,6 +176,35 @@ class SpotifyClient:
                 enriched.append(meta)
             return enriched
 
+        all_spotify_genres: set[str] = set()
+        for a in artist_details:
+            if a:
+                all_spotify_genres.update(a.get("genres") or [])
+        for a in top_artists_short + top_artists_medium:
+            all_spotify_genres.update(a.get("genres") or [])
+        print(f"[spotify] total unique genres from Spotify: {len(all_spotify_genres)}", flush=True)
+
+        if not all_spotify_genres:
+            print("[spotify] WARNING: Spotify returned zero genres, will need MusicBrainz fallback", flush=True)
+            from services.genre_lookup import lookup_genres_batch
+            artist_names = list({a.get("name", "") for a in top_artists_short + top_artists_medium if a.get("name")})
+            mb_genres = await lookup_genres_batch(artist_names[:15])
+            print(f"[spotify] MusicBrainz returned genres for {sum(1 for v in mb_genres.values() if v)}/{len(artist_names[:15])} artists", flush=True)
+
+            for a in artist_details:
+                if a and not a.get("genres"):
+                    mb = mb_genres.get(a.get("name", ""), [])
+                    if mb:
+                        a["genres"] = mb
+            artist_map = {a["id"]: a for a in artist_details if a}
+
+            for artist_list_key in [top_artists_short, top_artists_medium]:
+                for a in artist_list_key:
+                    if not a.get("genres"):
+                        mb = mb_genres.get(a.get("name", ""), [])
+                        if mb:
+                            a["genres"] = mb
+
         return {
             "top_short": enrich(top_short),
             "top_medium": enrich(top_medium),
@@ -175,11 +212,11 @@ class SpotifyClient:
             "recently_played": enrich(recently_played),
             "saved_tracks": enrich(saved_tracks),
             "top_artists_short": [
-                {"name": a["name"], "genres": a.get("genres", []), "popularity": a.get("popularity", 0)}
+                {"name": a["name"], "genres": a.get("genres") or [], "popularity": a.get("popularity", 0)}
                 for a in top_artists_short
             ],
             "top_artists_medium": [
-                {"name": a["name"], "genres": a.get("genres", []), "popularity": a.get("popularity", 0)}
+                {"name": a["name"], "genres": a.get("genres") or [], "popularity": a.get("popularity", 0)}
                 for a in top_artists_medium
             ],
         }

@@ -28,7 +28,7 @@ export default function Result() {
         <p className="text-text-muted">No track to display</p>
         <button
           onClick={() => navigate("/generate")}
-          className="text-violet hover:underline"
+          className="text-amber hover:underline"
         >
           Go generate one
         </button>
@@ -90,7 +90,7 @@ export default function Result() {
           href={state.suno_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-violet hover:text-violet-light text-sm mb-6 transition-colors"
+          className="text-amber hover:text-amber-light text-sm mb-6 transition-colors"
         >
           View on Suno
         </a>
@@ -118,7 +118,7 @@ export default function Result() {
               <svg
                 className={`w-8 h-8 ${
                   star <= (hoverRating || rating)
-                    ? "text-coral fill-coral"
+                    ? "text-amber fill-amber"
                     : "text-border fill-border"
                 } transition-colors`}
                 viewBox="0 0 24 24"
@@ -135,14 +135,14 @@ export default function Result() {
         {(submitted || rating > 0) && (
           <button
             onClick={() => navigate("/generate")}
-            className="px-6 py-3 bg-violet hover:bg-violet-light text-white font-semibold rounded-full transition-all duration-300"
+            className="px-6 py-3 bg-amber hover:bg-amber-light text-bg font-semibold rounded-full transition-all duration-300"
           >
             Regenerate
           </button>
         )}
         <button
           onClick={handleCopyPrompt}
-          className="px-6 py-3 border border-border hover:border-violet text-text-muted hover:text-text font-semibold rounded-full transition-all duration-300"
+          className="px-6 py-3 border border-border hover:border-amber text-text-muted hover:text-text font-semibold rounded-full transition-all duration-300"
         >
           {copied ? "Copied!" : "Copy Prompt"}
         </button>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { TasteProfile, PromptData } from "../api/client";
+import type { TasteProfile } from "../api/client";
 import { analyzeProfile } from "../api/client";
-import MoodMap from "../components/MoodMap";
+import SoundDials from "../components/SoundDials";
 import GenreCloud from "../components/GenreCloud";
 
 function Waveform() {
@@ -11,7 +11,7 @@ function Waveform() {
       {Array.from({ length: 24 }).map((_, i) => (
         <div
           key={i}
-          className="w-1 bg-violet rounded-full"
+          className="w-1 bg-amber rounded-full"
           style={{
             animation: `waveform 1.2s ease-in-out infinite`,
             animationDelay: `${i * 0.05}s`,
@@ -58,7 +58,7 @@ export default function Profile() {
         <p className="text-red-400">{error}</p>
         <button
           onClick={() => navigate("/")}
-          className="text-violet hover:underline"
+          className="text-amber hover:underline"
         >
           Try again
         </button>
@@ -68,41 +68,58 @@ export default function Profile() {
 
   if (!profile) return null;
 
-  const isUnderground = profile.popularity_avg < 50;
-
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-12">
-      <h2 className="font-[family-name:var(--font-display)] text-3xl font-bold mb-2 text-center">
+      <h2
+        className="font-[family-name:var(--font-display)] text-3xl font-bold mb-2 text-center"
+        style={{ animation: "fadeSlideUp 0.5s ease-out 0.05s both" }}
+      >
         Your Musical DNA
       </h2>
-      <p className="text-text-muted mb-10 text-center">
+      <p
+        className="text-text-muted mb-10 text-center"
+        style={{ animation: "fadeSlideUp 0.5s ease-out 0.1s both" }}
+      >
         Based on {profile.track_count} tracks analyzed
-        <span className="ml-2 text-xs px-2 py-0.5 bg-violet/20 text-violet-light rounded-full">
+        <span className="ml-2 text-xs px-2 py-0.5 bg-amber/15 text-amber-light rounded-full">
           {profile.confidence} confidence
         </span>
       </p>
 
       <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-bg-card border border-border rounded-2xl p-6">
+        <div
+          className="bg-bg-card border border-border rounded-2xl p-6"
+          style={{ animation: "fadeSlideUp 0.5s ease-out 0.15s both" }}
+        >
           <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4">
             Your Genres
           </h3>
           <GenreCloud genres={profile.top_genres} />
         </div>
 
-        <div className="bg-bg-card border border-border rounded-2xl p-6">
+        <div
+          className="bg-bg-card border border-border rounded-2xl p-6"
+          style={{ animation: "fadeSlideUp 0.5s ease-out 0.25s both" }}
+        >
           <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4">
-            Your Mood Space
+            Your Sound
           </h3>
-          <MoodMap energy={0.5} valence={0.5} />
+          <SoundDials
+            popularityAvg={profile.popularity_avg}
+            explicitRatio={profile.explicit_ratio}
+            eraCenter={profile.era_center}
+          />
         </div>
 
-        <div className="bg-bg-card border border-border rounded-2xl p-6">
+        <div
+          className="bg-bg-card border border-border rounded-2xl p-6"
+          style={{ animation: "fadeSlideUp 0.5s ease-out 0.35s both" }}
+        >
           <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-3">
             Your Era
           </h3>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-violet-light">
+            <span className="text-2xl font-bold text-amber-light">
               {profile.era_range}
             </span>
           </div>
@@ -112,39 +129,40 @@ export default function Profile() {
           </p>
         </div>
 
-        <div className="bg-bg-card border border-border rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-3">
-            Your Vibe
+        <div
+          className="bg-bg-card border border-border rounded-2xl p-6"
+          style={{ animation: "fadeSlideUp 0.5s ease-out 0.45s both" }}
+        >
+          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4">
+            Your Artists
           </h3>
-          <div className="flex items-center gap-2 mb-2">
-            <span
-              className={`text-lg font-semibold ${isUnderground ? "text-violet-light" : "text-coral"}`}
-            >
-              {isUnderground ? "Underground" : "Mainstream"}
-            </span>
+          <div className="space-y-2">
+            {profile.sample_top_artists.slice(0, 5).map((artist, i) => (
+              <div key={artist} className="flex items-center gap-3">
+                <span className="text-amber/30 text-xs font-mono w-5 text-right">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className={
+                    i === 0
+                      ? "text-base font-semibold text-text"
+                      : "text-sm text-text-muted"
+                  }
+                >
+                  {artist}
+                </span>
+              </div>
+            ))}
           </div>
-          <p className="text-text-muted text-sm">
-            Avg. popularity:{" "}
-            <span className="text-text font-medium">
-              {profile.popularity_avg.toFixed(0)}/100
-            </span>
-          </p>
-          <p className="text-text-muted text-sm">
-            Explicit ratio:{" "}
-            <span className="text-text font-medium">
-              {(profile.explicit_ratio * 100).toFixed(0)}%
-            </span>
-          </p>
         </div>
       </div>
 
       <button
-        onClick={() =>
-          navigate("/generate", { state: { profile } })
-        }
-        className="mt-10 px-8 py-4 bg-violet hover:bg-violet-light text-white font-semibold rounded-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] text-lg"
+        onClick={() => navigate("/generate", { state: { profile } })}
+        className="mt-10 px-8 py-4 bg-amber hover:bg-amber-light text-bg font-semibold rounded-full transition-all duration-300 hover:shadow-[0_0_30px_rgba(212,148,58,0.25)] text-lg"
+        style={{ animation: "fadeSlideUp 0.5s ease-out 0.55s both" }}
       >
-        Generate My Song →
+        Generate My Song &rarr;
       </button>
     </div>
   );

@@ -86,9 +86,20 @@ def build_taste_profile(data: dict) -> TasteProfile:
             year = _extract_year(track.get("release_date", ""))
             if year and 1950 <= year <= 2030:
                 years.append(year)
-            popularity_values.append(track.get("popularity", 50))
+            pop = track.get("popularity")
+            if isinstance(pop, (int, float)) and pop > 0:
+                popularity_values.append(pop)
             if track.get("explicit"):
                 explicit_count += 1
+
+    ARTIST_SOURCE_WEIGHTS = {"top_artists_short": 2.5, "top_artists_medium": 1.5}
+    for source, weight in ARTIST_SOURCE_WEIGHTS.items():
+        for artist in data.get(source, []):
+            for g in artist.get("genres") or []:
+                genre_counter[g] += weight
+            pop = artist.get("popularity")
+            if isinstance(pop, (int, float)) and pop > 0:
+                popularity_values.append(pop)
 
     top_genres = [g for g, _ in genre_counter.most_common(8)]
 
@@ -129,6 +140,9 @@ def build_taste_profile(data: dict) -> TasteProfile:
 
     popularity_avg = sum(popularity_values) / len(popularity_values) if popularity_values else 50.0
     explicit_ratio = explicit_count / total_tracks if total_tracks > 0 else 0.0
+
+    print(f"[analyzer] tracks={total_tracks}, genres={len(genre_counter)}, popularity_samples={len(popularity_values)}, popularity_avg={popularity_avg:.1f}", flush=True)
+    print(f"[analyzer] top_genres={top_genres[:5]}", flush=True)
 
     if total_tracks >= 80:
         confidence = "high"

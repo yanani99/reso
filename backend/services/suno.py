@@ -57,28 +57,50 @@ async def submit_captcha_solution(coordinates: list[dict]) -> bool:
 
 async def poll_for_completion(track_id: str) -> dict:
     elapsed = 0
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    consecutive_errors = 0
+    max_consecutive_errors = 5
+    async with httpx.AsyncClient(timeout=30.0) as client:
         while elapsed < TIMEOUT:
             interval = POLL_INTERVAL_INITIAL if elapsed < LATE_THRESHOLD else POLL_INTERVAL_LATE
             await asyncio.sleep(interval)
             elapsed += interval
 
-            resp = await client.get(f"{SUNO_API_URL}/api/get", params={"ids": track_id})
+            print(f"[poll] checking status for {track_id} (elapsed={elapsed}s)", flush=True)
+            try:
+                resp = await client.get(f"{SUNO_API_URL}/api/get", params={"ids": track_id})
+            except httpx.RequestError as e:
+                consecutive_errors += 1
+                print(f"[poll] request error ({consecutive_errors}/{max_consecutive_errors}): {e}", flush=True)
+                if consecutive_errors >= max_consecutive_errors:
+                    raise SunoError(f"Suno API unreachable after {max_consecutive_errors} retries")
+                continue
+
             if resp.status_code == 401:
                 raise SunoError("Suno session expired. Please update SUNO_COOKIE in .env and restart Docker.")
+            if resp.status_code >= 500:
+                consecutive_errors += 1
+                print(f"[poll] suno-api returned {resp.status_code} ({consecutive_errors}/{max_consecutive_errors}), retrying...", flush=True)
+                if consecutive_errors >= max_consecutive_errors:
+                    raise SunoError(f"Suno API returned {resp.status_code} after {max_consecutive_errors} retries")
+                continue
             resp.raise_for_status()
+            consecutive_errors = 0
 
             data = resp.json()
             if isinstance(data, list) and len(data) > 0:
                 track = data[0]
                 status = track.get("status", "")
+                audio_url = track.get("audio_url", "")
+                print(f"[poll] status={status}, audio_url={'yes' if audio_url else 'none'}", flush=True)
                 if status == "complete":
                     return {
-                        "audio_url": track.get("audio_url", ""),
+                        "audio_url": audio_url,
                         "image_url": track.get("image_url", ""),
                         "title": track.get("title", ""),
                     }
                 if status in ("error", "failed"):
                     raise SunoError(f"Suno generation failed with status: {status}")
+            else:
+                print(f"[poll] unexpected response shape: {str(data)[:300]}", flush=True)
 
     raise SunoError("Suno generation timed out after 3 minutes")

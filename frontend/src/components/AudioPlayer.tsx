@@ -62,34 +62,40 @@ export default function AudioPlayer({ src }: AudioPlayerProps) {
       <audio ref={audioRef} src={src} preload="metadata" />
 
       <div className="flex items-center gap-4">
-        {/* Play/Pause */}
         <button
           onClick={togglePlay}
-          className="w-12 h-12 flex items-center justify-center bg-violet hover:bg-violet-light rounded-full transition-all duration-200 hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] shrink-0"
+          className="w-12 h-12 flex items-center justify-center bg-amber hover:bg-amber-light rounded-full transition-all duration-200 hover:shadow-[0_0_20px_rgba(212,148,58,0.3)] shrink-0"
         >
           {playing ? (
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 text-bg"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
               <rect x="6" y="4" width="4" height="16" rx="1" />
               <rect x="14" y="4" width="4" height="16" rx="1" />
             </svg>
           ) : (
-            <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 text-bg ml-0.5"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path d="M8 5v14l11-7z" />
             </svg>
           )}
         </button>
 
-        {/* Scrubber + time */}
         <div className="flex-1 space-y-1">
           <div
             className="w-full h-2 bg-border rounded-full cursor-pointer group"
             onClick={handleScrub}
           >
             <div
-              className="h-full bg-gradient-to-r from-violet to-violet-light rounded-full relative transition-all"
+              className="h-full bg-gradient-to-r from-amber to-amber-light rounded-full relative transition-all"
               style={{ width: `${progress}%` }}
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-text rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </div>
           <div className="flex justify-between text-xs text-text-muted">

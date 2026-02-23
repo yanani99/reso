@@ -58,7 +58,9 @@ async def analyze(
         and user.profile_cache_at
         and (datetime.utcnow() - user.profile_cache_at) < CACHE_DURATION
     ):
-        return json.loads(user.profile_cache)
+        cached = json.loads(user.profile_cache)
+        if cached.get("top_genres"):
+            return cached
 
     access_token = await ensure_valid_token(user, session)
     spotify = SpotifyClient(access_token)

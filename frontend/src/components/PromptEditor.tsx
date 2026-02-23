@@ -13,7 +13,7 @@ export default function PromptEditor({ value, onChange }: PromptEditorProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={5}
-        className="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-text placeholder-text-muted/40 resize-none focus:outline-none focus:border-violet transition-colors"
+        className="w-full bg-bg border border-border rounded-xl px-4 py-3 text-sm text-text placeholder-text-muted/40 resize-none focus:outline-none focus:border-amber transition-colors"
         placeholder="Your music generation prompt..."
       />
       <div className="flex justify-between text-xs text-text-muted">

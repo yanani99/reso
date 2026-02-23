@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import uuid
 from datetime import datetime, timezone
@@ -15,6 +16,8 @@ from services.analyzer import TasteProfile, build_taste_profile
 from services.prompt_builder import generate_prompts
 from services.spotify import SpotifyClient, refresh_access_token
 from services.suno import SunoError, check_captcha_pending, poll_for_completion, submit_generation
+
+logger = logging.getLogger("reso.generate")
 
 router = APIRouter()
 
@@ -94,28 +97,41 @@ async def generate(
             tags = ", ".join(profile.top_genres[:5])
             gen_task = asyncio.create_task(submit_generation(suno_prompt, tags))
 
+            print("[generate] gen_task created, entering CAPTCHA poll loop", flush=True)
+
             captcha_sent = False
             poll_count = 0
             while not gen_task.done():
                 poll_count += 1
+                print(f"[generate] poll #{poll_count}", flush=True)
                 try:
                     captcha = await check_captcha_pending()
                     if captcha and not captcha_sent:
-                        print(f"[generate] CAPTCHA detected on poll #{poll_count}, sending to frontend ({len(captcha['image'])} bytes)")
+                        print(f"[generate] CAPTCHA FOUND on poll #{poll_count} ({len(captcha['image'])} bytes), yielding SSE event", flush=True)
                         yield sse_event("captcha_required", {
                             "image": captcha["image"],
                             "prompt": captcha["prompt"],
                         })
+                        print(f"[generate] CAPTCHA SSE event yielded", flush=True)
                         captcha_sent = True
-                    elif not captcha:
+                    elif captcha and captcha_sent:
+                        print(f"[generate] poll #{poll_count}: still pending (already sent)", flush=True)
+                    else:
+                        if captcha_sent:
+                            print(f"[generate] poll #{poll_count}: CAPTCHA cleared", flush=True)
                         captcha_sent = False
                 except Exception as exc:
-                    print(f"[generate] CAPTCHA poll #{poll_count} error: {exc}")
+                    print(f"[generate] poll #{poll_count} ERROR: {exc}", flush=True)
+                if poll_count % 5 == 0:
+                    yield ": keepalive\n\n"
                 await asyncio.sleep(2)
 
+            print(f"[generate] gen_task finished, done={gen_task.done()}", flush=True)
             suno_id = await gen_task
+            print(f"[generate] suno_id={suno_id}, starting poll_for_completion", flush=True)
 
             result = await poll_for_completion(suno_id)
+            print(f"[generate] poll_for_completion returned: {result}", flush=True)
 
             track_id = str(uuid.uuid4())
             generated = GeneratedTrack(
@@ -141,8 +157,11 @@ async def generate(
             })
 
         except SunoError as e:
+            print(f"[generate] SunoError: {e}", flush=True)
             yield sse_event("error", {"message": str(e)})
         except Exception as e:
+            import traceback
+            print(f"[generate] EXCEPTION: {e}\n{traceback.format_exc()}", flush=True)
             yield sse_event("error", {"message": f"Generation failed: {str(e)}"})
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")

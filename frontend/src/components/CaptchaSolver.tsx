@@ -72,7 +72,7 @@ export default function CaptchaSolver({
   return (
     <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-4">
       <div className="text-center space-y-1">
-        <p className="text-sm font-medium text-violet-light">
+        <p className="text-sm font-medium text-amber-light">
           CAPTCHA Verification Required
         </p>
         <p className="text-text font-semibold">{prompt}</p>
@@ -94,7 +94,7 @@ export default function CaptchaSolver({
         {markers.map((m, i) => (
           <div
             key={i}
-            className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full bg-violet/80 border-2 border-white flex items-center justify-center text-[10px] font-bold text-white pointer-events-none"
+            className="absolute w-6 h-6 -ml-3 -mt-3 rounded-full bg-amber/80 border-2 border-white flex items-center justify-center text-[10px] font-bold text-white pointer-events-none"
             style={{ left: `${m.pctX}%`, top: `${m.pctY}%` }}
           >
             {i + 1}
@@ -113,7 +113,7 @@ export default function CaptchaSolver({
         <button
           onClick={handleSubmit}
           disabled={markers.length === 0 || submitting}
-          className="flex-[2] py-2.5 rounded-xl bg-violet hover:bg-violet-light text-white font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex-[2] py-2.5 rounded-xl bg-amber hover:bg-amber-light text-bg font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {submitting ? "Submitting..." : `Submit (${markers.length})`}
         </button>

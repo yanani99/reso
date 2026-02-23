@@ -36,6 +36,8 @@ export default function Generate() {
       try {
         await submitCaptchaSolution(coordinates);
         setCaptchaData(null);
+        setStageMessage("Generating your track...");
+        setProgress(60);
       } catch (e) {
         console.error("CAPTCHA solve failed:", e);
       } finally {
@@ -121,7 +123,7 @@ export default function Generate() {
             onClick={() => setPlatform("suno")}
             className={`flex-1 py-2.5 rounded-lg font-medium transition-all text-sm ${
               platform === "suno"
-                ? "bg-violet text-white"
+                ? "bg-amber text-bg"
                 : "text-text-muted hover:text-text"
             }`}
           >
@@ -132,7 +134,7 @@ export default function Generate() {
             className="flex-1 py-2.5 rounded-lg font-medium text-text-muted/40 cursor-not-allowed text-sm relative"
           >
             Lyria
-            <span className="absolute -top-2 -right-1 text-[10px] bg-coral/20 text-coral px-1.5 py-0.5 rounded-full">
+            <span className="absolute -top-2 -right-1 text-[10px] bg-rose/20 text-rose px-1.5 py-0.5 rounded-full">
               Soon
             </span>
           </button>
@@ -170,7 +172,7 @@ export default function Generate() {
             )}
             {prompts.song_concept && (
               <div className="px-6 pb-4 text-sm text-text-muted">
-                <span className="text-violet-light font-medium">Concept:</span>{" "}
+                <span className="text-amber-light font-medium">Concept:</span>{" "}
                 {prompts.song_concept}
               </div>
             )}
@@ -181,18 +183,17 @@ export default function Generate() {
         {!generating ? (
           <button
             onClick={handleGenerate}
-            className="w-full py-4 bg-violet hover:bg-violet-light text-white font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(139,92,246,0.4)]"
+            className="w-full py-4 bg-amber hover:bg-amber-light text-bg font-bold text-lg rounded-2xl transition-all duration-300 hover:shadow-[0_0_40px_rgba(212,148,58,0.25)]"
           >
             Generate
           </button>
         ) : (
           <div className="bg-bg-card border border-border rounded-2xl p-6 space-y-4">
-            {/* Waveform animation */}
             <div className="flex items-end gap-1 h-10 justify-center">
               {Array.from({ length: 32 }).map((_, i) => (
                 <div
                   key={i}
-                  className="w-0.5 bg-gradient-to-t from-violet to-violet-light rounded-full"
+                  className="w-0.5 bg-gradient-to-t from-amber to-amber-light rounded-full"
                   style={{
                     animation: `waveform 1.2s ease-in-out infinite`,
                     animationDelay: `${i * 0.04}s`,
@@ -202,10 +203,9 @@ export default function Generate() {
               ))}
             </div>
 
-            {/* Progress bar */}
             <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-violet to-coral rounded-full transition-all duration-1000 ease-out"
+                className="h-full bg-gradient-to-r from-amber to-rose rounded-full transition-all duration-1000 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>

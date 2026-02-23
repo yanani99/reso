@@ -14,10 +14,10 @@ const SIZES = [
 ];
 
 const COLORS = [
-  "text-violet",
-  "text-violet-light",
-  "text-coral",
-  "text-violet-light",
+  "text-amber",
+  "text-amber-light",
+  "text-rose",
+  "text-amber-light",
   "text-text",
   "text-text-muted",
   "text-text-muted",
@@ -34,7 +34,7 @@ export default function GenreCloud({ genres }: GenreCloudProps) {
       {genres.map((genre, i) => (
         <span
           key={genre}
-          className={`${SIZES[i] || "text-xs"} ${COLORS[i] || "text-text-muted"} transition-all hover:text-violet cursor-default whitespace-nowrap`}
+          className={`${SIZES[i] || "text-xs"} ${COLORS[i] || "text-text-muted"} transition-all hover:text-amber cursor-default whitespace-nowrap`}
         >
           {genre}
         </span>
