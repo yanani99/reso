@@ -27,6 +27,9 @@ services:
   frontend:
     build: ./frontend
     container_name: reso-frontend
+    environment:
+      - PORT=3000
+      - BACKEND_URL=http://backend:8000
     ports:
       - "3000:3000"
     depends_on:

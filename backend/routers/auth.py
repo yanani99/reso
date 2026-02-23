@@ -66,11 +66,13 @@ async def callback(code: str, response: Response, session: Session = Depends(get
 
     jwt_token = create_jwt(user_id)
 
+    is_secure = FRONTEND_URL.startswith("https")
     redirect = RedirectResponse(url=f"{FRONTEND_URL}/profile?token={jwt_token}")
     redirect.set_cookie(
         key="reso_token",
         value=jwt_token,
         httponly=True,
+        secure=is_secure,
         samesite="lax",
         max_age=TOKEN_EXPIRE_HOURS * 3600,
     )

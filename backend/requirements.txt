@@ -7,3 +7,4 @@ python-jose[cryptography]
 python-dotenv
 pydantic
 musicbrainzngs
+psycopg2-binary
